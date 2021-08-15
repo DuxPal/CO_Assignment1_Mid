@@ -43,12 +43,10 @@ inst_dict = {"add": "00000",
 def checking(arr):
     result = ""
 
-
     if arr[0][-1] == ":":
         arr = arr[1:]
 
     length = len(arr)
-
 
     if length == 2:
         if arr[0] in inst_dict:  # Type E
@@ -86,7 +84,6 @@ def main():
                 if not ln[0:3] == "var":
                     string_list.append(ln)
 
-                #string_list.append(ln)
                 Ln = ln.split()
                 if Ln[0] == "var":
                     var_dict[Ln[1]] = 0
