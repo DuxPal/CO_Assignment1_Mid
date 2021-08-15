@@ -43,10 +43,12 @@ inst_dict = {"add": "00000",
 def checking(arr):
     result = ""
 
+
     if arr[0][-1] == ":":
         arr = arr[1:]
 
     length = len(arr)
+
 
     if length == 2:
         if arr[0] in inst_dict:  # Type E
@@ -75,6 +77,10 @@ def checking(arr):
     elif length == 1:
         if arr[0] in inst_dict:
             result += inst_dict[arr[0]] + "0" * 11
+    else:
+        print("error")
+        exit()
+
     print(result)
 
 
