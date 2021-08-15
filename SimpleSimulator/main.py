@@ -50,7 +50,7 @@ def checking(arr):
 
     if length == 2:
         if arr[0] in inst_dict:  # Type E
-            result = result + inst_dict[arr[0]] + label_dict[arr[1]]
+            result += inst_dict[arr[0]] + "0"*3 + f'{label_dict[arr[1]]:08b}'
 
     elif length == 3:
         if arr[0] == "mov" and arr[2][0] == "$" and arr[1] in reg_dict:  # Type B
@@ -61,6 +61,9 @@ def checking(arr):
 
         elif arr[0] == "mov" and arr[2] in reg_dict and arr[1] in reg_dict:  # Type C -->
             result += "00011" + "00000" + reg_dict[arr[1]] + reg_dict[arr[2]]
+
+        elif arr[0] in inst_dict and arr[2] in reg_dict and arr[1] in reg_dict:  # Type C -->
+            result += inst_dict[arr[0]] + "00000" + reg_dict[arr[1]] + reg_dict[arr[2]]
 
         elif arr[0] in inst_dict and arr[1] in reg_dict and arr[2] in var_dict:
             result += inst_dict[arr[0]] + reg_dict[arr[1]] + f'{var_dict[arr[2]]:08b}'
@@ -84,6 +87,7 @@ def main():
                 if not ln[0:3] == "var":
                     string_list.append(ln)
 
+                #string_list.append(ln)
                 Ln = ln.split()
                 if Ln[0] == "var":
                     var_dict[Ln[1]] = 0
