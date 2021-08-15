@@ -1,6 +1,5 @@
 addr = 0
 string_list = []
-count = 0
 var_dict = {}
 label_dict = {}
 
@@ -53,14 +52,14 @@ def checking(arr):
         if arr[0] == "mov" and arr[2][0] == "$" and arr[1] in reg_dict:  # Type B
             result += "00010" + reg_dict[arr[1]] + f'{int(arr[2][1:]):08b}'
 
-        elif arr[0] in inst_dict and arr[2][0] == "$" and arr[1] in reg_dict:  # Type B
+        elif arr[0] in inst_dict and arr[2][0] == "$" and arr[1] in reg_dict:  # Type B rs and ls
             result += inst_dict[arr[0]] + reg_dict[arr[1]] + f'{int(arr[2][1:]):08b}'
 
-        elif arr[0] in inst_dict and arr[2] in reg_dict and arr[1] in reg_dict:  # Type C
-            result += inst_dict[arr[0]] + "00000" + reg_dict[arr[1]] + reg_dict[arr[2]]
+        elif arr[0] == "mov" and arr[2] in reg_dict and arr[1] in reg_dict:  # Type C -->
+            result += "00011" + "00000" + reg_dict[arr[1]] + reg_dict[arr[2]]
 
-        elif arr[0] in inst_dict and arr[1] in reg_dict and arr[2] in label_dict:
-            result += inst_dict[arr[0]] + reg_dict[arr[1]] + f'{label_dict[arr[2]]:08b}'
+        elif arr[0] in inst_dict and arr[1] in reg_dict and arr[2] in var_dict:
+            result += inst_dict[arr[0]] + reg_dict[arr[1]] + f'{var_dict[arr[2]]:08b}'
 
     elif length == 4:
         if arr[0] in inst_dict and arr[1] in reg_dict and arr[2] in reg_dict:  # Type A
@@ -68,7 +67,7 @@ def checking(arr):
 
     elif length == 1:
         if arr[0] in inst_dict:
-            result += inst_dict[arr[0]]+"0"*11
+            result += inst_dict[arr[0]] + "0" * 11
     print(result)
 
 
@@ -81,29 +80,27 @@ def main():
                 string_list.append(ln)
                 Ln = ln.split()
                 if Ln[0] == "var":
-                    global count
-                    count += 1
                     var_dict[Ln[1]] = 0
 
                     # label:
-
-                elif Ln[0][-1] == ":":
+                else:
                     global addr
-                    count += 1
-                    label_dict[Ln[0][0:-1]] = addr
+                    if Ln[0][-1] == ":":
+                        label_dict[Ln[0][0:-1]] = addr
                     addr += 1
 
         except EOFError:
             break
 
+
 def substituting_var_address():
     c = 0
     for i in var_dict:
-        c += 1
         var_dict[i] = addr + c
+        c += 1
 
 
 if __name__ == "__main__":
     main()
     substituting_var_address()
-    process()
+    process()  # perform some operation(s) on given string
