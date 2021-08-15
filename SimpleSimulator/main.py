@@ -1,3 +1,18 @@
+from sys import stdin
+
+addr = 0
+string_list = []
+count = 0
+var_dict = {}
+label_dict = {}
+
+
+def process():
+    for i in string_list:
+        arr = i.split()
+        check(arr)
+
+
 reg_dict = {"R0": "000",
             "R1": "001",
             "R2": "010",
@@ -26,78 +41,69 @@ inst_dict = {"add": "00000",
              "jgt": "10001",
              "je": "10010",
              "hlt": "10011"}
-v = []
-addr = 0
-c = 0
 
 
 def check(arr):
     result = ""
-    leng = len(arr)
-    global addr
-    global c
-    #   A=4     B=3       c=3       D =3      E=2      F=1
+    length = len(arr)
 
-    if leng == 1:
+    if length == 2:
+        if arr[0] in inst_dict:  # Type E
+            result = result + inst_dict[arr[0]] + label_dict[arr[1]]
+
+    elif length == 3:
+        if arr[0] == "mov" and arr[2][0] == "$" and arr[1] in reg_dict:  # Type B
+            result += "00010" + reg_dict[arr[1]] + f'{int(arr[2][1:]):08b}'
+
+        elif arr[0] in inst_dict and arr[2][0] == "$" and arr[1] in reg_dict:  # Type B
+            result += inst_dict[arr[0]] + reg_dict[arr[1]] + f'{int(arr[2][1:]):08b}'
+
+        elif arr[0] in inst_dict and arr[2] in reg_dict and arr[1] in reg_dict:  # Type C
+            result += inst_dict[arr[0]] + "00000" + reg_dict[arr[1]] + reg_dict[arr[2]]
+
+        elif arr[0] in inst_dict and arr[1] in reg_dict and arr[2] in label_dict:
+            result += inst_dict[arr[0]] + reg_dict[arr[1]] + f'{label_dict[arr[2]]:08b}'
+
+
+    elif length == 4:
+        if arr[0] in inst_dict and arr[1] in reg_dict and arr[2] in reg_dict:  # Type A
+            result += inst_dict[arr[0]] + "00" + reg_dict[arr[1]] + reg_dict[arr[2]] + reg_dict[arr[3]]
+
+    elif length == 1:
         if arr[0] in inst_dict:
-            result = result + inst_dict[arr[0]] + "00000000000"
-            addr += 1
-            print(result)
-            return
-
-    elif leng == 2:
-
-        if arr[0] == "var":
-            v.append(arr[1])
-            c = c + 1
-
-        elif arr[0] in inst_dict:         # Type E
-            result = result + inst_dict[arr[0]]
-
-    elif leng == 3:
-        if arr[0] in inst_dict:  # Type D,C,B
-            val = inst_dict[arr[0]]
-            result = result + val
-
-            if arr[1] and arr[2] in reg_dict:  # Type C
-                result = result + "00000" + reg_dict[arr[1]] + reg_dict[arr[2]]
-
-            elif arr[1] in reg_dict:
-                result += reg_dict[arr[1]]
-                #
-                #
-                #
-
-    elif leng == 4:
-        if arr[0] in inst_dict:  # Type A
-            result = result + inst_dict[arr[0]]
-
-            # value(binary string) of register
-            if arr[1] in reg_dict:
-                result = result + "00" + reg_dict[arr[1]]
-
-                if arr[2] in reg_dict:
-                    result = result + reg_dict[arr[2]]
-
-                    if arr[3] in reg_dict:
-                        result = result + reg_dict[arr[3]]
-                        print(result)
-                        return
+            result += inst_dict[arr[0]]+"0"*11
 
 
 def main():
-    from sys import stdin
-
     for line in stdin:
-        if line == '':  # If empty string is read then stop the loop
-            break
-        process(line)   # perform some operation(s) on given string
+        if line != "":  # If empty string is read then stop the loop
+            ln = line.strip()
+            string_list.append(ln)
+            Ln = ln.split()
+
+            if Ln[0] == "var":
+                global count
+                count += 1
+                var_dict[Ln[1]] = 0
 
 
-def process(line):
-    ln = line.split()
-    check(ln)
-    return
+            # label:
 
-if __name__ == "__main":
+            elif Ln[0][-1] == ":":
+                global addr
+                count += 1
+                label_dict[Ln[0][0:-1]] = addr
+                addr += 1
+
+
+def substituting_var_address():
+    c = 0
+    for i in var_dict:
+        c += 1
+        var_dict[i] = addr + c
+
+
+if __name__ == "_main__":
     main()
+    substituting_var_address()
+    process()  # perform some operation(s) on given string
