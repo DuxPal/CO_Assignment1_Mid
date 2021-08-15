@@ -1,5 +1,3 @@
-from sys import stdin
-
 addr = 0
 string_list = []
 count = 0
@@ -10,7 +8,7 @@ label_dict = {}
 def process():
     for i in string_list:
         arr = i.split()
-        check(arr)
+        checking(arr)
 
 
 reg_dict = {"R0": "000",
@@ -43,7 +41,7 @@ inst_dict = {"add": "00000",
              "hlt": "10011"}
 
 
-def check(arr):
+def checking(arr):
     result = ""
     length = len(arr)
 
@@ -64,7 +62,6 @@ def check(arr):
         elif arr[0] in inst_dict and arr[1] in reg_dict and arr[2] in label_dict:
             result += inst_dict[arr[0]] + reg_dict[arr[1]] + f'{label_dict[arr[2]]:08b}'
 
-
     elif length == 4:
         if arr[0] in inst_dict and arr[1] in reg_dict and arr[2] in reg_dict:  # Type A
             result += inst_dict[arr[0]] + "00" + reg_dict[arr[1]] + reg_dict[arr[2]] + reg_dict[arr[3]]
@@ -72,29 +69,32 @@ def check(arr):
     elif length == 1:
         if arr[0] in inst_dict:
             result += inst_dict[arr[0]]+"0"*11
+    print(result)
 
 
 def main():
-    for line in stdin:
-        if line != "":  # If empty string is read then stop the loop
-            ln = line.strip()
-            string_list.append(ln)
-            Ln = ln.split()
+    while True:
+        try:
+            line = input()
+            if line != "":
+                ln = line.strip()
+                string_list.append(ln)
+                Ln = ln.split()
+                if Ln[0] == "var":
+                    global count
+                    count += 1
+                    var_dict[Ln[1]] = 0
 
-            if Ln[0] == "var":
-                global count
-                count += 1
-                var_dict[Ln[1]] = 0
+                    # label:
 
+                elif Ln[0][-1] == ":":
+                    global addr
+                    count += 1
+                    label_dict[Ln[0][0:-1]] = addr
+                    addr += 1
 
-            # label:
-
-            elif Ln[0][-1] == ":":
-                global addr
-                count += 1
-                label_dict[Ln[0][0:-1]] = addr
-                addr += 1
-
+        except EOFError:
+            break
 
 def substituting_var_address():
     c = 0
@@ -103,7 +103,7 @@ def substituting_var_address():
         var_dict[i] = addr + c
 
 
-if __name__ == "_main__":
+if __name__ == "__main__":
     main()
     substituting_var_address()
-    process()  # perform some operation(s) on given string
+    process()
