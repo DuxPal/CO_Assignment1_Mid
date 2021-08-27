@@ -1,3 +1,9 @@
+import matplotlib.pyplot as plt
+
+cycle = 0
+mem_address = []
+cyc = []
+
 mem_addr = {}
 PC_dict = {}
 PC = 0
@@ -29,7 +35,6 @@ def execute():
     global PC
     instruction = PC_dict[PC]  # Xor or And ADD SUB  MUL  mnemonic reg reg reg
     global halt_occured
-
 
     if instruction[0:5] == "00000":  # +
         reg_dict[instruction[7:10]] = reg_dict[instruction[10:13]] + reg_dict[instruction[13:len(instruction)]]
@@ -89,7 +94,7 @@ def execute():
         reg_dict[instruction[5:8]] = instruction[8:] >> 1
 
     elif instruction[0:5] == "01001":  # ls
-        reg_dict[instruction[5:8]]= instruction[8:] << 1
+        reg_dict[instruction[5:8]] = instruction[8:] << 1
 
     elif instruction[0:5] == "00010":  # move immediate
         reg_dict[instruction[5:8]] = int(instruction[8:], 2)
@@ -97,7 +102,7 @@ def execute():
     elif instruction[0:5] == "00011":  # move reg
         reg_dict[instruction[10:13]] = reg_dict[instruction[13:]]
         if instruction[13:] == "111":
-            reg_dict["111"]=0
+            reg_dict["111"] = 0
 
 
     elif instruction[0:5] == "01110":  # cmp
@@ -124,7 +129,7 @@ def execute():
     elif instruction[0:5] == "10000":  # jlt
         if reg_dict["111"] == 4:
             PC = (int(instruction[8:], 2)) - 1
-        reg_dict["111"]=0
+        reg_dict["111"] = 0
 
     elif instruction[0:5] == "10001":  # jgt
         if reg_dict["111"] == 2:
@@ -150,24 +155,39 @@ def update_PC():
     global PC
     PC += 1
 
+
 def mem_dump():
-    count=1
+    count = 1
     for i in PC_dict:
         print(PC_dict[i])
-        count+=1
+        count += 1
 
     for i in mem_addr:
         print(f'{mem_addr[i]:016b}')
-        count+=1
+        count += 1
 
-    while count<=256:
-        print("0"*16)
-        count+=1
+    while count <= 256:
+        print("0" * 16)
+        count += 1
+
+
+def graph():
+
+    plt.plot(mem_address, cyc)
+
+    plt.xlabel('Cycle')
+
+    plt.ylabel('Address')
+
+    plt.title('MemoryAccess vs Cycle')
+
+    plt.show()
 
 
 def process():
     global PC
     global halt_occured
+    global cycle
 
     while not halt_occured:
         execute()
@@ -175,9 +195,14 @@ def process():
 
         print_reg()
 
+        mem_address.append(PC)
         update_PC()
-    mem_dump()
 
+        cyc.append(cycle)
+        cycle += 1
+
+    mem_dump()
+    graph()
 
 
 main()
