@@ -3,7 +3,6 @@ PC_dict = {}
 PC = 0
 halt_occured = False
 
-
 reg_dict = {"000": 0,
             "001": 0,
             "010": 0,
@@ -30,6 +29,7 @@ def execute():
     global PC
     instruction = PC_dict[PC]  # Xor or And ADD SUB  MUL  mnemonic reg reg reg
     global halt_occured
+
 
     if instruction[0:5] == "00000":  # +
         reg_dict[instruction[7:10]] = reg_dict[instruction[10:13]] + reg_dict[instruction[13:len(instruction)]]
@@ -89,21 +89,26 @@ def execute():
         reg_dict[instruction[5:8]] = instruction[8:] >> 1
 
     elif instruction[0:5] == "01001":  # ls
-        reg_dict[instruction[5:8]] = instruction[8:] << 1
+        reg_dict[instruction[5:8]]= instruction[8:] << 1
 
     elif instruction[0:5] == "00010":  # move immediate
         reg_dict[instruction[5:8]] = int(instruction[8:], 2)
 
     elif instruction[0:5] == "00011":  # move reg
-        reg_dict[instruction[10:13]] = reg_dict[instruction[13:len(instruction)]]
+        reg_dict[instruction[10:13]] = reg_dict[instruction[13:]]
+        if instruction[13:] == "111":
+            reg_dict["111"]=0
+
 
     elif instruction[0:5] == "01110":  # cmp
-        if instruction[10:13] == instruction[13:]:
+        if reg_dict[instruction[10:13]] == reg_dict[instruction[13:]]:
             reg_dict["111"] = 1
-        elif instruction[10:13] > instruction[13:]:
+        elif reg_dict[instruction[10:13]] > reg_dict[instruction[13:]]:
             reg_dict["111"] = 2
         else:
             reg_dict["111"] = 4
+
+
 
     elif instruction[0:5] == "00101":  # str
         mem_addr[instruction[8:]] = reg_dict[instruction[5:8]]
@@ -119,14 +124,17 @@ def execute():
     elif instruction[0:5] == "10000":  # jlt
         if reg_dict["111"] == 4:
             PC = (int(instruction[8:], 2)) - 1
+        reg_dict["111"]=0
 
     elif instruction[0:5] == "10001":  # jgt
         if reg_dict["111"] == 2:
             PC = (int(instruction[8:], 2)) - 1
+        reg_dict["111"] = 0
 
     elif instruction[0:5] == "10010":  # je
         if reg_dict["111"] == 1:
             PC = (int(instruction[8:], 2)) - 1
+        reg_dict["111"] = 0
 
     elif instruction[0:5] == "10011":  # hlt
         halt_occured = True
@@ -135,26 +143,26 @@ def execute():
 def print_reg():
     for i in reg_dict:
         print(f'{reg_dict[i]:016b}', end=" ")
+    print()
 
 
-def update_pc():
+def update_PC():
     global PC
     PC += 1
 
-
 def mem_dump():
-    count = 1
+    count=1
     for i in PC_dict:
         print(PC_dict[i])
-        count += 1
+        count+=1
 
     for i in mem_addr:
-        print(mem_addr[i])
-        count += 1
+        print(f'{mem_addr[i]:016b}')
+        count+=1
 
-    while count <= 256:
+    while count<=256:
         print("0"*16)
-        count += 1
+        count+=1
 
 
 def process():
@@ -167,10 +175,11 @@ def process():
 
         print_reg()
 
-        update_pc()
+        update_PC()
     mem_dump()
 
 
-main()
 
+main()
+PC = 0
 process()
